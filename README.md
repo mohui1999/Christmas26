@@ -72,6 +72,12 @@ blender -b --factory-startup --python scripts/build.py -- --draft
 
 `scripts/build.py` 每次都会从空场景重新生成，不依赖外部贴图或模型资产；所有材质均为程序化 PBR 节点。
 
+## 线上地址
+
+**https://christmas26.113067.xyz/** — 2026-11-23 部署于 <server-ip>：Cloudflare A 记录（proxied）+ nginx 静态托管 + Cloudflare Origin CA 证书（2041-11-19 到期），无常驻进程。站点目录 `<site-root>`，配置 `<nginx-sites>/christmas26.113067.xyz`。
+
+更新静态文件：重新打包 `web/` 上传解压到站点目录即可。注意 macOS 打包会保留 600 权限，解压后需 `chmod -R a+rX <site-root>`，否则 nginx 返回 403。HTML/JS/CSS 不缓存便于迭代，GLB/PNG/wasm 等大文件缓存 7 天；若改了模型或贴图，记得刷新 Cloudflare 缓存。
+
 ## 本地浏览器预览
 
 项目内置一个本地 three.js 展示页（无需联网、无需构建）。当前服务已运行于 **http://127.0.0.1:8787/**：
