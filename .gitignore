@@ -13,3 +13,6 @@ __pycache__/
 .idea/
 .vscode/
 *.swp
+
+# 私有开发文档（含部署细节），不进公开仓库
+DEV-DOC.md

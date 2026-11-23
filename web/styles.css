@@ -343,3 +343,12 @@ body.walking .masthead-actions [data-action="fullscreen"]{opacity:.55}
   .masthead-actions .force3d-only{display:none}
   .still-mode .stage-actions .chip.mobile-only[data-action="still"]{display:none}
 }
+
+/* GitHub 源码入口（页头右上角） */
+.github-link{text-decoration:none;gap:7px}
+.github-link svg{flex:0 0 auto;opacity:.85;transition:opacity .25s,transform .25s}
+.github-link:hover svg{opacity:1;transform:scale(1.08)}
+@media(max-width:900px){
+  .masthead-actions .github-link{width:30px;padding:0}
+  .github-label{display:none}
+}

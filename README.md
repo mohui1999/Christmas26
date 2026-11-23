@@ -2,7 +2,7 @@
 
 一座完全由代码生成的蓝调时刻微缩世界：Python 驱动 Blender 程序化搭建场景，three.js 搬进浏览器，微信里也能直接旋转、缩放、漫游。
 
-[🎄 在线演示](https://christmas26.113067.xyz/) · [📖 开发文档](DEV-DOC.md) · [✍️ 博客文章](https://blog.113067.xyz/)
+[🎄 在线演示](https://christmas26.113067.xyz/) · [✍️ 博客文章](https://blog.113067.xyz/)
 
 ![Christmas26 渲染成片](renders/christmas_town_post.png)
 
@@ -64,7 +64,6 @@ web/
   models/                完整版 + 轻量版 GLB
   vendor/three/          本地 three.js 与 Draco 解码器
   assets/                封面、静帧、图标
-DEV-DOC.md               开发记录与踩坑
 ```
 
 ## 🎛 页面参数
@@ -79,7 +78,7 @@ DEV-DOC.md               开发记录与踩坑
 
 纯静态 nginx 托管，无常驻进程。Cloudflare A 记录 + nginx + Origin CA 证书；站点目录 `<site-root>`，配置 `<nginx-sites>/christmas26.113067.xyz`。
 
-增量更新：打包 `web/` 上传解压后执行 `chmod -R a+rX <site-root>`（macOS 打包会带 600 权限，否则 nginx 403）。HTML/JS/CSS 不缓存，GLB/PNG/wasm 缓存 7 天；改模型后需清 Cloudflare 缓存。详细卡点见 [DEV-DOC.md](DEV-DOC.md)。
+增量更新：打包 `web/` 上传解压后执行 `chmod -R a+rX <site-root>`（macOS 打包会带 600 权限，否则 nginx 403）。HTML/JS/CSS 不缓存，GLB/PNG/wasm 缓存 7 天；改模型后需清 Cloudflare 缓存。
 
 ## 📄 License
 
@@ -87,4 +86,4 @@ DEV-DOC.md               开发记录与踩坑
 
 ---
 
-*全部资产由程序化脚本生成，无外部贴图或模型依赖。数据与技术细节见 [DEV-DOC.md](DEV-DOC.md) 与[博客文章](https://blog.113067.xyz/)。*
+*全部资产由程序化脚本生成，无外部贴图或模型依赖。技术细节见[博客文章](https://blog.113067.xyz/)。*
