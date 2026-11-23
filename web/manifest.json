@@ -1,0 +1,14 @@
+{
+  "name": "梦幻圣诞小镇 · Christmas Town",
+  "short_name": "圣诞小镇",
+  "description": "蓝调时刻的欧洲圣诞小镇：15.2 米冷杉、七栋店铺、可旋转与漫游的 Blender 3D 微缩场景。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07111d",
+  "theme_color": "#07111d",
+  "icons": [
+    { "src": "./assets/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "./assets/favicon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/logo-badge.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

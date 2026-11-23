@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { initTreeFx, updateTreeFx } from './tree_fx.js';
-import { initSceneFx, updateSceneFx } from './scene_fx.js';
+import { initTreeFx, updateTreeFx } from './tree_fx.js?v=20261123g';
+import { initSceneFx, updateSceneFx } from './scene_fx.js?v=20261123g';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 
 const stage = document.getElementById('stage');
 const canvas = document.getElementById('scene');
@@ -21,16 +22,20 @@ const lightbox = document.getElementById('lightbox');
 const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
 // 轻量通道：移动端/微信默认启用；?full=1 桌面强制关闭，?lite=1 桌面强制开启
 const _params = new URLSearchParams(location.search);
-const LITE = _params.has('lite') || ((/MicroMessenger|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || isMobile()) && !_params.has('full'));
+const _touch = (navigator.maxTouchPoints || 0) > 0;
+const LITE = _params.has('lite') || ((/MicroMessenger|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (isMobile() && _touch)) && !_params.has('full'));
+const _loaderNote = document.querySelector('.loader-note');
+if (_loaderNote) _loaderNote.textContent = LITE ? '6.2 MB 轻量场景 · 首次加载约几秒' : '52 MB Draco 压缩场景 · 首次加载需要几秒';
 
 // ------------------------------------------------------------------ renderer
 const renderer = new THREE.WebGLRenderer({
   canvas, antialias: !LITE, powerPreference: LITE ? 'default' : 'high-performance', alpha: false,
 });
-renderer.setPixelRatio(LITE ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
+const LITE_DPR = Math.min(window.devicePixelRatio || 1, 1.25);
+renderer.setPixelRatio(LITE ? LITE_DPR : Math.min(window.devicePixelRatio || 1, 1.8));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = LITE ? 1.05 : 0.92;
+renderer.toneMappingExposure = LITE ? 1.12 : 0.92;
 renderer.shadowMap.enabled = !LITE;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.setClearColor(0x08111d, 1);
@@ -143,7 +148,7 @@ controls.autoRotateSpeed = 0.55;
 controls.update();
 
 // ------------------------------------------------------------- walk camera
-const walkCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
+const walkCamera = new THREE.PerspectiveCamera(70, 1, 0.1, 400);
 walkCamera.position.set(0, 6.2, 16);
 const walkBg = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), bgPlane.material);
 walkBg.scale.set(400, 400, 1);
@@ -163,22 +168,43 @@ walkControls.enablePan = false;
 walkControls.minDistance = 3.2;
 walkControls.maxDistance = 16;
 walkControls.minPolarAngle = 0.25;
-walkControls.maxPolarAngle = Math.PI * 0.47;
+walkControls.maxPolarAngle = Math.PI * 0.50;
 walkControls.autoRotate = false;
 walkControls.update();
+let walkLookOffset = 0;
+let walkLookDragY = null;
 
 // ---------------------------------------------------------------- environment
 if (!LITE) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environmentIntensity = 0.12;
+} else {
+  // tiny cheap gradient env so metals and gold still catch a highlight
+  const ec = document.createElement('canvas');
+  ec.width = 128; ec.height = 64;
+  const eg = ec.getContext('2d');
+  const grad = eg.createLinearGradient(0, 0, 0, 64);
+  grad.addColorStop(0, '#223c58');
+  grad.addColorStop(0.48, '#8d7f72');
+  grad.addColorStop(0.55, '#d6a06a');
+  grad.addColorStop(0.7, '#3a3026');
+  grad.addColorStop(1, '#0a1119');
+  eg.fillStyle = grad; eg.fillRect(0, 0, 128, 64);
+  const etex = new THREE.CanvasTexture(ec);
+  etex.mapping = THREE.EquirectangularReflectionMapping;
+  etex.colorSpace = THREE.SRGBColorSpace;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromEquirectangular(etex).texture;
+  scene.environmentIntensity = 0.38;
+  etex.dispose(); pmrem.dispose();
 }
 
 scene.add(new THREE.HemisphereLight(0x9bbce6, 0x2a1d18, LITE ? 0.62 : 0.38));
 const moon = new THREE.DirectionalLight(0xbcd5ff, LITE ? 1.35 : 0.95);
 moon.position.set(-26, 38, 30);
 moon.castShadow = !LITE;
-moon.shadow.mapSize.set(2048, 2048);
+moon.shadow.mapSize.set(LITE ? 1024 : 3072, LITE ? 1024 : 3072);
 moon.shadow.camera.left = -38;
 moon.shadow.camera.right = 38;
 moon.shadow.camera.top = 38;
@@ -204,6 +230,23 @@ if (!LITE) {
 scene.add(new THREE.AmbientLight(0x22344d, LITE ? 0.2 : 0.12));
 
 // --------------------------------------------------------------------- stars
+function makeStarPointTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(32, 32, 1, 32, 32, 31);
+  grd.addColorStop(0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.28, 'rgba(225,240,255,0.95)');
+  grd.addColorStop(0.65, 'rgba(170,205,245,0.35)');
+  grd.addColorStop(1, 'rgba(140,180,230,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const starPointTexture = makeStarPointTexture();
+
 const starPositions = [];
 for (let i = 0; i < 760; i++) {
   const theta = Math.random() * Math.PI * 2;
@@ -219,7 +262,7 @@ const starGeo = new THREE.BufferGeometry();
 starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
 const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({
   color: 0xc7dcff, size: 0.9, sizeAttenuation: true, transparent: true,
-  opacity: 0.72, depthWrite: false, fog: false,
+  map: starPointTexture, alphaTest: 0.02, opacity: 0.8, depthWrite: false, fog: false,
 }));
 scene.add(stars);
 
@@ -740,7 +783,7 @@ function buildWanderer() {
 }
 
 const wanderer = buildWanderer();
-wanderer.position.set(0, GROUND_Y, 10.5);
+wanderer.position.set(0, GROUND_Y, 12.0);
 wanderer.rotation.y = Math.PI;
 wanderer.visible = false;
 scene.add(wanderer);
@@ -841,11 +884,22 @@ function updateTrail(dt) {
 // ------------------------------------------------------------------ composer
 // 轻量通道直接渲染到画布：跳过 Bloom 与全屏 RT，显著降低显存和填充开销
 let composer = null;
-if (!LITE) {
+let renderPass = null;
+if (LITE) {
+  // low-cost bloom at capped DPR; keeps windows, lamps and the tree glowing without the full-size RT
   composer = new EffectComposer(renderer);
   composer.setPixelRatio(renderer.getPixelRatio());
-  composer.addPass(new RenderPass(scene, camera));
+  renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 0.28, 0.5, 0.9));
+  composer.addPass(new OutputPass());
+} else {
+  composer = new EffectComposer(renderer);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
   composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 0.42, 0.62, 0.86));
+  composer.addPass(new SMAAPass());
   composer.addPass(new OutputPass());
 }
 
@@ -869,6 +923,51 @@ function resize() {
 new ResizeObserver(resize).observe(stage);
 window.addEventListener('orientationchange', () => setTimeout(resize, 180));
 resize();
+
+// Remove two door firs at the cake shop and the two front planter firs.
+// The exported GLB is one joined mesh, so clip their tree/planter materials by world-space spheres.
+const TREE_CUTS = [
+  { x: 14.885, y: 2.7, z: 9.398, r: 1.35 },
+  { x: 13.413, y: 2.7, z: 7.838, r: 1.35 },
+  { x: -1.719, y: 2.9, z: 11.0, r: 1.25 },
+  { x: 3.081, y: 2.9, z: 10.2, r: 1.25 },
+];
+
+function installTreeCuts(root) {
+  const cutA = TREE_CUTS.map((c) => new THREE.Vector3(c.x, c.y, c.z));
+  const cutR = TREE_CUTS.map((c) => c.r);
+  const names = new Set(['needles', 'bark_bark', 'pot_stone', 'pot_stone2']);
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) {
+      if (!m || !names.has(m.name)) continue;
+      m.onBeforeCompile = (shader) => {
+        shader.uniforms.uCutA = { value: cutA };
+        shader.uniforms.uCutR = { value: cutR };
+        shader.vertexShader = `varying vec3 vCutW;
+` + shader.vertexShader.replace(
+          '#include <project_vertex>',
+          `#include <project_vertex>
+  vCutW = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+        );
+        shader.fragmentShader = `varying vec3 vCutW;
+uniform vec3 uCutA[4];
+uniform float uCutR[4];
+` + shader.fragmentShader.replace(
+          'void main() {',
+          `void main() {
+  for (int i = 0; i < 4; i++) {
+    vec3 d = vCutW - uCutA[i];
+    if (dot(d, d) < uCutR[i] * uCutR[i]) discard;
+  }`
+        );
+      };
+      m.customProgramCacheKey = () => 'tree-cut-4';
+      m.needsUpdate = true;
+    }
+  });
+}
 
 // -------------------------------------------------------------------- model
 let model = null;
@@ -915,12 +1014,15 @@ gltfLoader.load(LITE ? './models/christmas_town_lite.glb' : './models/christmas_
     }
   });
 
+  installTreeCuts(model);
   scene.add(model);
   initTreeFx(scene, model, LITE);
   initSceneFx(scene, LITE);
   ground.position.y = -0.035;
   glowDisc.position.y = 0.02;
   controls.target.set(0, Math.min(8.5, Math.max(4.5, size.y * 0.34)), 0);
+  if (isMobile()) camera.zoom = 1.22;
+  camera.updateProjectionMatrix();
   controls.update();
 
   console.log('Loaded Christmas Town', { meshes, materials: seen.size, size: size.toArray(), triangles: renderer.info.render.triangles });
@@ -958,7 +1060,6 @@ const walkObstacles = [
   { x: -5.8, z: 8.6, r: 1.35 }, { x: 6.4, z: 8.0, r: 1.35 },
   { x: -10.5, z: -3.0, r: 1.35 }, { x: 10.0, z: -3.8, r: 1.35 },
   { x: -11.2, z: 4.6, r: 0.55 },
-  { x: -2.0, z: 11.0, r: 0.85 }, { x: 2.8, z: 10.2, r: 0.85 },
   { x: -13.6, z: -2.5, r: 0.85 },
   { x: -11.5, z: 11.5, r: 2.1 },
 ];
@@ -989,8 +1090,8 @@ function placeWalkCamera() {
   const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
   const target = new THREE.Vector3(wanderer.position.x, GROUND_Y + 1.0, wanderer.position.z);
   const shoulder = stage.clientWidth < 700 ? 0.7 : 1.15;
-  const back = fwd.clone().multiplyScalar(-6.8).add(right.multiplyScalar(shoulder));
-  walkCamera.position.copy(target).add(back).add(new THREE.Vector3(0, 1.85, 0));
+  const back = fwd.clone().multiplyScalar(-8.4).add(right.multiplyScalar(shoulder));
+  walkCamera.position.copy(target).add(back).add(new THREE.Vector3(0, 2.5, 0));
   walkControls.target.copy(target);
   walkControls.update();
 }
@@ -1008,9 +1109,11 @@ function enterWalk() {
   walkState.mode = 'walk';
   walkState.vel.set(0, 0, 0);
   walkState.keys.clear();
+  walkLookOffset = 0;
+  walkLookDragY = null;
   walkState.joy.x = 0; walkState.joy.y = 0;
   if (!walkState.initialized) {
-    wanderer.position.set(0, GROUND_Y, 10.5);
+    wanderer.position.set(0, GROUND_Y, 12.0);
     walkState.heading = Math.PI;
     walkState.initialized = true;
   }
@@ -1022,7 +1125,7 @@ function enterWalk() {
   walkControls.enabled = true;
   walkControls.minDistance = 3.2;
   walkControls.maxDistance = 16;
-  renderPass.camera = walkCamera;
+  if (renderPass) renderPass.camera = walkCamera;
   bgPlane.visible = false;
   walkBg.visible = true;
   document.body.classList.add('walking');
@@ -1033,6 +1136,8 @@ function enterWalk() {
 
 function exitWalk() {
   if (walkState.mode !== 'walk') return;
+  walkLookOffset = 0;
+  walkLookDragY = null;
   walkState.mode = 'orbit';
   walkState.keys.clear();
   walkState.joy.x = 0; walkState.joy.y = 0;
@@ -1045,7 +1150,7 @@ function exitWalk() {
     camera.zoom = orbitSaved.zoom;
     camera.updateProjectionMatrix();
   }
-  renderPass.camera = camera;
+  if (renderPass) renderPass.camera = camera;
   bgPlane.visible = true;
   walkBg.visible = false;
   controls.update();
@@ -1242,8 +1347,8 @@ renderer.setAnimationLoop(() => {
     walkControls.update();
     if (walkCamera.position.y < GROUND_Y + 0.55) {
       walkCamera.position.y = GROUND_Y + 0.55;
-      walkCamera.lookAt(walkControls.target);
     }
+    walkCamera.lookAt(walkControls.target.x, walkControls.target.y + walkLookOffset, walkControls.target.z);
   } else {
     controls.autoRotate = autoRotate;
     controls.update();
@@ -1275,7 +1380,7 @@ function resetView() {
   if (walkState.mode === 'walk') { resetWalkCamera(); return; }
   home.position.set(-30, 38, 58);
   home.target.set(0, 6.5, 0);
-  camera.zoom = 1;
+  camera.zoom = isMobile() ? 1.22 : 1;
   camera.position.copy(home.position);
   camera.updateProjectionMatrix();
   controls.target.copy(home.target);
@@ -1341,6 +1446,27 @@ document.addEventListener('keyup', (e) => {
 });
 window.addEventListener('blur', () => walkState.keys.clear());
 
+// vertical drag at the flat limit becomes a free look-up pitch
+canvas.addEventListener('pointerdown', (e) => {
+  if (walkState.mode === 'walk') walkLookDragY = e.clientY;
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (walkState.mode !== 'walk' || walkLookDragY === null) return;
+  const dy = e.clientY - walkLookDragY;
+  walkLookDragY = e.clientY;
+  if (Math.abs(dy) < 0.01) return;
+  const atLimit = walkControls.getPolarAngle() >= walkControls.maxPolarAngle - 0.025;
+  if (dy < 0 && atLimit) {
+    walkLookOffset = Math.min(12, walkLookOffset - dy * 0.025);
+  } else if (dy > 0 && walkLookOffset > 0) {
+    walkLookOffset = Math.max(0, walkLookOffset - dy * 0.025);
+  }
+});
+const endLookDrag = () => { walkLookDragY = null; };
+canvas.addEventListener('pointerup', endLookDrag);
+canvas.addEventListener('pointercancel', endLookDrag);
+window.addEventListener('blur', endLookDrag);
+
 // --------------------------------------------------------------- joystick
 function setJoystickFromPointer(e) {
   if (!joystick || joyPointer === null) return;
@@ -1382,7 +1508,7 @@ if (joystick) {
   window.addEventListener('pointercancel', end);
 }
 
-window.__town = { THREE, walkState, wanderer, walkCamera, walkControls, controls, camera, get model() { return model; }, enterWalk, exitWalk, trailGeo, trailAge, trailPos, trailMat, trailPoints, trailPool };
+window.__town = { THREE, walkState, wanderer, walkCamera, walkControls, controls, camera, get model() { return model; }, get walkLookOffset() { return walkLookOffset; }, enterWalk, exitWalk, trailGeo, trailAge, trailPos, trailMat, trailPoints, trailPool };
 controls.addEventListener('start', () => {
   if (autoRotate) {
     autoRotate = false;

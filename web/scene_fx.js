@@ -126,6 +126,71 @@ export function initSceneFx(scene, lite = false) {
     group.add(pool);
   }
 
+  // two snowmen in the plaza
+  const snowMat = new THREE.MeshStandardMaterial({ color: 0xf2f7fb, roughness: 0.88, metalness: 0.0 });
+  const coalMat = new THREE.MeshStandardMaterial({ color: 0x1d1a18, roughness: 0.9 });
+  const carrotMat = new THREE.MeshStandardMaterial({ color: 0xe28a3a, roughness: 0.7 });
+  const twigMat = new THREE.MeshStandardMaterial({ color: 0x5b3a26, roughness: 0.9 });
+  const hatMat = new THREE.MeshStandardMaterial({ color: 0x1b1a1e, roughness: 0.8 });
+  const scarfMat = new THREE.MeshStandardMaterial({ color: 0xa83232, roughness: 0.85 });
+
+  function addSnowman(x, z, rot) {
+    const s = new THREE.Group();
+    s.position.set(x, GROUND, z);
+    s.rotation.y = rot;
+    const snow = (r, y, sy = 1) => {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), snowMat);
+      m.position.y = y;
+      m.scale.set(1, sy, 1);
+      m.castShadow = !lite;
+      s.add(m);
+      return m;
+    };
+    snow(0.56, 0.54, 0.92);
+    snow(0.41, 1.24, 0.96);
+    snow(0.30, 1.82, 1.0);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.06, 20), hatMat);
+    brim.position.y = 2.07; brim.castShadow = !lite; s.add(brim);
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.28, 0.30, 20), hatMat);
+    crown.position.y = 2.24; crown.castShadow = !lite; s.add(crown);
+    for (const side of [-1, 1]) {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.026, 8, 6), coalMat);
+      eye.position.set(side * 0.105, 1.90, 0.267);
+      s.add(eye);
+      const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.032, 0.62, 6), twigMat);
+      arm.position.set(side * 0.60, 1.28, 0);
+      arm.rotation.z = side * -1.02;
+      arm.castShadow = !lite;
+      s.add(arm);
+      const twig = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.02, 0.26, 5), twigMat);
+      twig.position.set(side * 0.76, 1.52, 0.06);
+      twig.rotation.z = side * -0.5;
+      s.add(twig);
+    }
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.058, 0.26, 8), carrotMat);
+    nose.position.set(0, 1.80, 0.42);
+    nose.rotation.x = Math.PI / 2;
+    nose.castShadow = !lite;
+    s.add(nose);
+    for (const by of [0.75, 1.05, 1.37]) {
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.036, 8, 6), coalMat);
+      b.position.set(0, by, 0.50 - (by - 0.75) * 0.07);
+      s.add(b);
+    }
+    const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.295, 0.060, 6, 20), scarfMat);
+    scarf.rotation.x = Math.PI / 2;
+    scarf.position.y = 1.58;
+    scarf.castShadow = !lite;
+    s.add(scarf);
+    const tail = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.30, 0.035), scarfMat);
+    tail.position.set(0.18, 1.40, 0.26);
+    tail.rotation.z = -0.18;
+    s.add(tail);
+    return s;
+  }
+  group.add(addSnowman(-4.2, 6.8, 0.35));
+  group.add(addSnowman(3.2, 6.2, -0.35));
+
   // icicles along the front eaves
   const icicleGeo = new THREE.ConeGeometry(1, 1, 5);
   icicleGeo.rotateX(Math.PI);
