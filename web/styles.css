@@ -313,3 +313,23 @@ body.walking .masthead-actions [data-action="fullscreen"]{opacity:.55}
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;transition-duration:.001ms!important}
 }
+
+/* ------------------------------------------------- mobile / WeChat poster */
+.stage-poster{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:1}
+.still-mode #scene,.still-mode .stage-glow,.still-mode .stage-grain,.still-mode .walk-hud,.still-mode .joystick{display:none!important}
+.still-mode .stage-poster{display:block}
+.still-mode .stage-actions .chip:not([data-action="still"]),.still-mode .walk-cta{display:none!important}
+.still-mode .force3d-only{display:inline-flex!important}
+.force3d-only{display:none}
+.still-mode .hint-desktop{display:none}
+.still-mode .hint-mobile{display:inline}
+.still-mode .hint-mobile::after{content:" · 点击 3D 版可体验交互"}
+@media(max-width:900px){
+  .stage-poster{object-position:center 35%}
+}
+/* 静帧模式：底部 chip 里的 3D 入口（移动端 masthead 按钮被隐藏，必须放这里） */
+.still-mode .stage-actions .chip.force3d-only{display:inline-flex!important}
+@media(max-width:900px){
+  .masthead-actions .force3d-only{display:none}
+  .still-mode .stage-actions .chip.mobile-only[data-action="still"]{display:none}
+}

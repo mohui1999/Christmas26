@@ -12,6 +12,7 @@
 <div class="app">
   <main class="stage" id="stage">
     <canvas id="scene" aria-label="Interactive 3D Christmas town"></canvas>
+    <img id="stage-poster" class="stage-poster" alt="梦幻圣诞小镇静帧">
     <div class="stage-glow"></div>
     <div class="stage-grain"></div>
 
@@ -33,6 +34,7 @@
         <button class="btn ghost" data-action="still">静帧</button>
         <button class="btn ghost" data-action="info">场景信息</button>
         <button class="btn ghost walk-cta" data-action="walk"><span class="cta-star">✦</span> 漫游</button>
+        <button class="btn ghost force3d-only" data-action="force-3d">3D 版</button>
         <button class="btn primary" data-action="fullscreen">全屏</button>
       </div>
     </header>
@@ -44,6 +46,7 @@
         <span class="hint-mobile">拖拽旋转 <i>·</i> 双指缩放 <i>·</i> 单指平移</span>
       </div>
       <div class="stage-actions">
+        <button class="chip force3d-only" data-action="force-3d"><span class="chip-icon">✦</span> 3D 版</button>
         <button class="chip mobile-only" data-action="still">静帧</button>
         <button class="chip" data-action="rotate" aria-pressed="false">
           <span class="chip-icon">↻</span> 自动旋转
@@ -158,6 +161,25 @@
   }
 }
 </script>
-<script type="module" src="./main.js"></script>
+<script>
+  // 移动端/微信 WebView 默认静帧，避免 52MB Draco 场景反复崩溃重载；
+  // 桌面或 ?3d=1 时走完整 3D。?still=1 可强制静帧。
+  (function () {
+    var ua = navigator.userAgent || '';
+    var q = new URLSearchParams(location.search);
+    var isWeChat = /MicroMessenger/i.test(ua);
+    var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || window.matchMedia('(max-width: 900px)').matches;
+    var still = q.has('still') || (!q.has('3d') && (isWeChat || isMobile));
+    document.documentElement.classList.add(still ? 'still-mode' : 'full3d-mode');
+    var src = still ? './still.js' : './main.js';
+    var s = document.createElement('script');
+    s.type = 'module';
+    s.src = src;
+    s.onerror = function () {
+      document.getElementById('loader-status').textContent = 'SCRIPT LOAD FAILED · ' + src;
+    };
+    document.body.appendChild(s);
+  })();
+</script>
 </body>
 </html>
