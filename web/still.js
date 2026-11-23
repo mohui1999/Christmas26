@@ -2,7 +2,7 @@
 const isMobile = window.matchMedia('(max-width: 900px)').matches;
 const poster = document.getElementById('stage-poster');
 poster.src = isMobile ? './assets/mobile_final.png' : './assets/hero.png';
-poster.alt = '梦幻圣诞小镇最终渲染静帧';
+poster.alt = window.I18N ? window.I18N.t('still.alt') : '梦幻圣诞小镇最终渲染静帧';
 
 const loader = document.getElementById('loader');
 if (loader) loader.remove();
@@ -45,4 +45,9 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { setStill(false); setRail(false); }
 });
 
-document.title = '梦幻圣诞小镇 · 静帧预览';
+function applyStillI18n() {
+  document.title = window.I18N ? window.I18N.t('still.title') : '梦幻圣诞小镇 · 静帧预览';
+  poster.alt = window.I18N ? window.I18N.t('still.alt') : '梦幻圣诞小镇最终渲染静帧';
+}
+applyStillI18n();
+document.addEventListener('i18nchange', applyStillI18n);

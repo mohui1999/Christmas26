@@ -25,7 +25,7 @@ const _params = new URLSearchParams(location.search);
 const _touch = (navigator.maxTouchPoints || 0) > 0;
 const LITE = _params.has('lite') || ((/MicroMessenger|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (isMobile() && _touch)) && !_params.has('full'));
 const _loaderNote = document.querySelector('.loader-note');
-if (_loaderNote) _loaderNote.textContent = LITE ? '6.2 MB 轻量场景 · 首次加载约几秒' : '52 MB Draco 压缩场景 · 首次加载需要几秒';
+if (_loaderNote && window.I18N) _loaderNote.textContent = window.I18N.t(LITE ? 'loader.note.lite' : 'loader.note.full');
 
 // ------------------------------------------------------------------ renderer
 const renderer = new THREE.WebGLRenderer({
@@ -982,7 +982,7 @@ gltfLoader.setDRACOLoader(draco);
 
 function setProgress(pct) {
   if (progressFill) progressFill.style.width = Math.min(100, Math.max(0, pct)) + '%';
-  if (loaderStatus) loaderStatus.textContent = 'LOADING GEOMETRY · ' + Math.round(pct) + '%';
+  if (loaderStatus) loaderStatus.textContent = (window.I18N ? window.I18N.t('loader.loading') : 'LOADING GEOMETRY · ') + Math.round(pct) + '%';
 }
 
 gltfLoader.load(LITE ? './models/christmas_town_lite.glb' : './models/christmas_town.glb', (gltf) => {
@@ -1026,7 +1026,7 @@ gltfLoader.load(LITE ? './models/christmas_town_lite.glb' : './models/christmas_
   controls.update();
 
   console.log('Loaded Christmas Town', { meshes, materials: seen.size, size: size.toArray(), triangles: renderer.info.render.triangles });
-  if (loaderStatus) loaderStatus.textContent = 'COMPILING LIGHTS · READY';
+  if (loaderStatus) loaderStatus.textContent = window.I18N ? window.I18N.t('loader.compiling') : 'COMPILING LIGHTS · READY';
   setTimeout(() => {
     loaderEl.classList.add('is-done');
     window.__viewerReady = true;
@@ -1037,7 +1037,7 @@ gltfLoader.load(LITE ? './models/christmas_town_lite.glb' : './models/christmas_
 }, (err) => {
   console.error(err);
   loaderEl.classList.add('is-error');
-  if (loaderStatus) loaderStatus.textContent = '3D PREVIEW UNAVAILABLE';
+  if (loaderStatus) loaderStatus.textContent = window.I18N ? window.I18N.t('loader.unavailable') : '3D PREVIEW UNAVAILABLE';
   if (errorBtn) errorBtn.hidden = false;
   window.__viewerError = String(err);
 });

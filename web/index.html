@@ -35,13 +35,14 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
 <link rel="manifest" href="./manifest.json">
 
-<link rel="stylesheet" href="./styles.css?v=20261123j">
+<link rel="stylesheet" href="./styles.css?v=20261123l">
+<script src="./i18n.js?v=20261123l"></script>
 </head>
 <body>
 <div class="app">
   <main class="stage" id="stage">
     <canvas id="scene" aria-label="Interactive 3D Christmas town"></canvas>
-    <img id="stage-poster" class="stage-poster" alt="梦幻圣诞小镇静帧">
+    <img id="stage-poster" class="stage-poster" alt="梦幻圣诞小镇静帧" data-i18n-attrs="alt:poster.alt">
     <div class="stage-glow"></div>
     <div class="stage-grain"></div>
 
@@ -52,17 +53,18 @@
         </div>
         <div class="brand-text">
           <p class="eyebrow">A Blender Diorama · Winter 2026</p>
-          <h1>梦幻圣诞小镇</h1>
+          <h1 data-i18n="brand.title">梦幻圣诞小镇</h1>
           <p class="brand-sub">Christmas Town <span>·</span> An interactive miniature world</p>
         </div>
       </div>
       <div class="masthead-actions">
-        <button class="btn ghost" data-action="still">静帧</button>
-        <button class="btn ghost" data-action="info">场景信息</button>
-        <button class="btn ghost walk-cta" data-action="walk"><span class="cta-star">✦</span> 漫游</button>
-        <button class="btn ghost force3d-only" data-action="force-3d">3D 版</button>
-        <button class="btn primary" data-action="fullscreen">全屏</button>
-        <a class="btn ghost github-link" href="https://github.com/mohui1999/Christmas26" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 查看开源源码" title="GitHub · 开源源码">
+        <button class="btn ghost lang-btn" id="lang-btn" aria-label="切换到英文" title="切换到英文">EN</button>
+        <button class="btn ghost" data-action="still" data-i18n="btn.still">静帧</button>
+        <button class="btn ghost" data-action="info" data-i18n="btn.info">场景信息</button>
+        <button class="btn ghost walk-cta" data-action="walk"><span class="cta-star">✦</span> <span data-i18n="btn.walk">漫游</span></button>
+        <button class="btn ghost force3d-only" data-action="force-3d" data-i18n="btn.force3d">3D 版</button>
+        <button class="btn primary" data-action="fullscreen" data-i18n="btn.fullscreen">全屏</button>
+        <a class="btn ghost github-link" href="https://github.com/mohui1999/Christmas26" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 查看开源源码" title="GitHub · 开源源码" data-i18n-attrs="aria-label:btn.github.aria|title:btn.github.title">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A7.995 7.995 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           <span class="github-label">GitHub</span>
         </a>
@@ -72,37 +74,37 @@
     <div class="stage-footer">
       <div class="hint">
         <span class="dot"></span>
-        <span class="hint-desktop">拖拽旋转 <i>/</i> 滚轮缩放 <i>/</i> 右键平移</span>
-        <span class="hint-mobile">拖拽旋转 <i>·</i> 双指缩放 <i>·</i> 单指平移</span>
+        <span class="hint-desktop" data-i18n="hint.desktop" data-i18n-mode="html">拖拽旋转 <i>/</i> 滚轮缩放 <i>/</i> 右键平移</span>
+        <span class="hint-mobile" data-i18n="hint.mobile" data-i18n-mode="html">拖拽旋转 <i>·</i> 双指缩放 <i>·</i> 单指平移</span>
       </div>
       <div class="stage-actions">
-        <button class="chip force3d-only" data-action="force-3d"><span class="chip-icon">✦</span> 3D 版</button>
-        <button class="chip mobile-only" data-action="still">静帧</button>
+        <button class="chip force3d-only" data-action="force-3d"><span class="chip-icon">✦</span> <span data-i18n="btn.force3d">3D 版</span></button>
+        <button class="chip mobile-only" data-action="still" data-i18n="btn.still">静帧</button>
         <button class="chip" data-action="rotate" aria-pressed="false">
-          <span class="chip-icon">↻</span> 自动旋转
+          <span class="chip-icon">↻</span> <span data-i18n="chip.rotate">自动旋转</span>
         </button>
         <button class="chip" data-action="reset">
-          <span class="chip-icon">⌂</span> 重置视角
+          <span class="chip-icon">⌂</span> <span data-i18n="chip.reset">重置视角</span>
         </button>
         <button class="chip walk-toggle" data-action="walk">
-          <span class="chip-icon">✦</span> 漫游
+          <span class="chip-icon">✦</span> <span data-i18n="chip.walk">漫游</span>
         </button>
       </div>
     </div>
 
     <div class="walk-hud" id="walk-hud" aria-hidden="true">
       <div class="walk-copy">
-        <p class="eyebrow">Wanderer · 漫游模式</p>
+        <p class="eyebrow" data-i18n="walk.eyebrow">Wanderer · 漫游模式</p>
         <div class="walk-hint">
-          <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动</span>
-          <span><kbd>Shift</kbd> 奔跑</span>
-          <span>拖拽视角 · 可仰视</span>
-          <span>滚轮距离</span>
-          <span class="walk-mobile-hint">左侧摇杆 移动 · 拖动画面 转向 / 仰视</span>
+          <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span data-i18n="walk.move">移动</span></span>
+          <span><kbd>Shift</kbd> <span data-i18n="walk.run">奔跑</span></span>
+          <span data-i18n="walk.look">拖拽视角 · 可仰视</span>
+          <span data-i18n="walk.zoom">滚轮距离</span>
+          <span class="walk-mobile-hint" data-i18n="walk.mobile">左侧摇杆 移动 · 拖动画面 转向 / 仰视</span>
         </div>
       </div>
     </div>
-    <button class="btn primary walk-exit" data-action="walk" aria-label="退出漫游">✕ 退出漫游</button>
+    <button class="btn primary walk-exit" data-action="walk" aria-label="退出漫游" data-i18n-attrs="aria-label:walk.exit"><span data-i18n="walk.exit">✕ 退出漫游</span></button>
 
     <div class="joystick" id="joystick" aria-hidden="true">
       <div class="joystick-base"></div>
@@ -116,11 +118,11 @@
             <path d="M32 4l5.4 20.5L58 29l-16.6 8.1L37 58 32 39.4 15 47l7.6-17.1L8 21l19.5-.2L32 4z" stroke="currentColor" stroke-width="1"/>
           </svg>
         </div>
-        <p class="loader-title">正在点亮小镇</p>
+        <p class="loader-title" data-i18n="loader.title">正在点亮小镇</p>
         <p class="loader-sub" id="loader-status">LOADING GEOMETRY · 0%</p>
         <div class="progress"><span id="progress-fill"></span></div>
         <p class="loader-note">52 MB Draco 压缩场景 · 首次加载需要几秒</p>
-        <button class="btn ghost loader-error-btn" id="loader-error-btn" hidden>查看静帧</button>
+        <button class="btn ghost loader-error-btn" id="loader-error-btn" hidden data-i18n="loader.error">查看静帧</button>
       </div>
     </div>
 
@@ -133,36 +135,36 @@
   </main>
 
   <aside class="rail" id="rail">
-    <button class="rail-close" data-action="info" aria-label="关闭场景信息">×</button>
+    <button class="rail-close" data-action="info" aria-label="关闭场景信息" data-i18n-attrs="aria-label:rail.close.aria">×</button>
     <div class="rail-scroll">
       <div class="rail-head">
         <p class="eyebrow">Scene Notes · 01</p>
-        <h2>蓝调时刻的<br><em>圣诞广场</em></h2>
-        <p class="intro">一座围合式的欧洲圣诞广场：中央冷杉撑起整个夜空，七栋店铺以暖光回应积雪与石板，教堂的钟楼从小镇背后升起。</p>
+        <h2 data-i18n="rail.heading" data-i18n-mode="html">蓝调时刻的<br><em>圣诞广场</em></h2>
+        <p class="intro" data-i18n="rail.intro">一座围合式的欧洲圣诞广场：中央冷杉撑起整个夜空，七栋店铺以暖光回应积雪与石板，教堂的钟楼从小镇背后升起。</p>
       </div>
 
       <div class="stats">
-        <div class="stat"><span class="value">15.2<span class="unit">m</span></span><span class="label">中央冷杉</span></div>
-        <div class="stat"><span class="value">07</span><span class="label">特色建筑</span></div>
-        <div class="stat"><span class="value">5,100<span class="unit">+</span></span><span class="label">场景对象</span></div>
-        <div class="stat"><span class="value">770<span class="unit">+</span></span><span class="label">树灯灯珠</span></div>
+        <div class="stat"><span class="value">15.2<span class="unit">m</span></span><span class="label" data-i18n="stat.fir">中央冷杉</span></div>
+        <div class="stat"><span class="value">07</span><span class="label" data-i18n="stat.buildings">特色建筑</span></div>
+        <div class="stat"><span class="value">5,100<span class="unit">+</span></span><span class="label" data-i18n="stat.objects">场景对象</span></div>
+        <div class="stat"><span class="value">770<span class="unit">+</span></span><span class="label" data-i18n="stat.lights">树灯灯珠</span></div>
       </div>
 
-      <div class="section-title"><span>The Shops</span><span>七栋建筑</span></div>
+      <div class="section-title"><span>The Shops</span><span data-i18n="shops.title">七栋建筑</span></div>
       <ul class="shops">
-        <li><span class="idx">01</span><strong>CAKE SHOP</strong><span>圣诞蛋糕店</span></li>
-        <li><span class="idx">02</span><strong>COFFEE</strong><span>街角咖啡店</span></li>
-        <li><span class="idx">03</span><strong>FRESH FRUITS</strong><span>水果店</span></li>
-        <li><span class="idx">04</span><strong>MINI MARKET</strong><span>便利店</span></li>
-        <li><span class="idx">05</span><strong>BAKERY</strong><span>手工面包店</span></li>
-        <li><span class="idx">06</span><strong>PIZZERIA</strong><span>意大利披萨店</span></li>
-        <li><span class="idx">07</span><strong>CHAPEL</strong><span>圣诞小教堂</span></li>
+        <li><span class="idx">01</span><strong>CAKE SHOP</strong><span data-i18n="shop.cake">圣诞蛋糕店</span></li>
+        <li><span class="idx">02</span><strong>COFFEE</strong><span data-i18n="shop.coffee">街角咖啡店</span></li>
+        <li><span class="idx">03</span><strong>FRESH FRUITS</strong><span data-i18n="shop.fruits">水果店</span></li>
+        <li><span class="idx">04</span><strong>MINI MARKET</strong><span data-i18n="shop.market">便利店</span></li>
+        <li><span class="idx">05</span><strong>BAKERY</strong><span data-i18n="shop.bakery">手工面包店</span></li>
+        <li><span class="idx">06</span><strong>PIZZERIA</strong><span data-i18n="shop.pizzeria">意大利披萨店</span></li>
+        <li><span class="idx">07</span><strong>CHAPEL</strong><span data-i18n="shop.chapel">圣诞小教堂</span></li>
       </ul>
 
       <div class="notes">
-        <p><span>MATERIAL</span>程序化 PBR · 石板、灰泥、木材、积雪</p>
-        <p><span>LIGHT</span>冷月光 + 暖橱窗 + 树灯 + 低空薄雾</p>
-        <p><span>CAMERA</span>正交 3/4 俯视 · 电影级构图</p>
+        <p data-i18n="note.material" data-i18n-mode="html"><span>MATERIAL</span>程序化 PBR · 石板、灰泥、木材、积雪</p>
+        <p data-i18n="note.light" data-i18n-mode="html"><span>LIGHT</span>冷月光 + 暖橱窗 + 树灯 + 低空薄雾</p>
+        <p data-i18n="note.camera" data-i18n-mode="html"><span>CAMERA</span>正交 3/4 俯视 · 电影级构图</p>
       </div>
     </div>
     <div class="rail-foot">
@@ -173,10 +175,10 @@
   <div class="rail-backdrop" data-action="info"></div>
 </div>
 
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="最终渲染静帧">
-  <button class="lightbox-close" data-action="close-still" aria-label="关闭">×</button>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="最终渲染静帧" data-i18n-attrs="aria-label:lightbox.aria">
+  <button class="lightbox-close" data-action="close-still" aria-label="关闭" data-i18n-attrs="aria-label:lightbox.close.aria">×</button>
   <figure>
-    <img src="./assets/hero.png" alt="梦幻圣诞小镇最终渲染">
+    <img src="./assets/hero.png" alt="梦幻圣诞小镇最终渲染" data-i18n-attrs="alt:hero.alt">
     <figcaption>
       <span>FINAL STILL · 1920 × 1200</span>
       <span>Blender Cycles · AgX · 80 samples</span>
@@ -202,12 +204,12 @@
     var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || window.matchMedia('(max-width: 900px)').matches;
     var still = q.has('still'); // 移动端/微信默认直进轻量 3D；?still 手动看静帧
     document.documentElement.classList.add(still ? 'still-mode' : 'full3d-mode');
-    var src = (still ? './still.js' : './main.js') + '?v=20261123g';
+    var src = (still ? './still.js' : './main.js') + '?v=20261123l';
     var s = document.createElement('script');
     s.type = 'module';
     s.src = src;
     s.onerror = function () {
-      document.getElementById('loader-status').textContent = 'SCRIPT LOAD FAILED · ' + src;
+      document.getElementById('loader-status').textContent = (window.I18N ? window.I18N.t('loader.scriptFail') : 'SCRIPT LOAD FAILED · ') + src;
     };
     document.body.appendChild(s);
   })();

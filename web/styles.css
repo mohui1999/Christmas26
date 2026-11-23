@@ -352,3 +352,9 @@ body.walking .masthead-actions [data-action="fullscreen"]{opacity:.55}
   .masthead-actions .github-link{width:30px;padding:0}
   .github-label{display:none}
 }
+
+/* 语言切换（页头右上角，桌面/移动均可见） */
+.lang-btn{min-width:38px;padding:0 10px;letter-spacing:.06em;cursor:pointer}
+@media(max-width:900px){
+  .masthead-actions .lang-btn{min-width:32px;padding:0 8px;font-size:9px}
+}
