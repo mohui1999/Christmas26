@@ -19,16 +19,19 @@ const errorBtn = document.getElementById('loader-error-btn');
 const lightbox = document.getElementById('lightbox');
 
 const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
+// 轻量通道：移动端/微信默认启用；?full=1 桌面强制关闭，?lite=1 桌面强制开启
+const _params = new URLSearchParams(location.search);
+const LITE = _params.has('lite') || ((/MicroMessenger|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || isMobile()) && !_params.has('full'));
 
 // ------------------------------------------------------------------ renderer
 const renderer = new THREE.WebGLRenderer({
-  canvas, antialias: true, powerPreference: 'high-performance', alpha: false,
+  canvas, antialias: !LITE, powerPreference: LITE ? 'default' : 'high-performance', alpha: false,
 });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+renderer.setPixelRatio(LITE ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.92;
-renderer.shadowMap.enabled = true;
+renderer.toneMappingExposure = LITE ? 1.05 : 0.92;
+renderer.shadowMap.enabled = !LITE;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.setClearColor(0x08111d, 1);
 
@@ -165,14 +168,16 @@ walkControls.autoRotate = false;
 walkControls.update();
 
 // ---------------------------------------------------------------- environment
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = 0.12;
+if (!LITE) {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.12;
+}
 
-scene.add(new THREE.HemisphereLight(0x9bbce6, 0x2a1d18, 0.38));
-const moon = new THREE.DirectionalLight(0xbcd5ff, 0.95);
+scene.add(new THREE.HemisphereLight(0x9bbce6, 0x2a1d18, LITE ? 0.62 : 0.38));
+const moon = new THREE.DirectionalLight(0xbcd5ff, LITE ? 1.35 : 0.95);
 moon.position.set(-26, 38, 30);
-moon.castShadow = true;
+moon.castShadow = !LITE;
 moon.shadow.mapSize.set(2048, 2048);
 moon.shadow.camera.left = -38;
 moon.shadow.camera.right = 38;
@@ -184,17 +189,19 @@ moon.shadow.bias = -0.0004;
 moon.shadow.normalBias = 0.035;
 scene.add(moon);
 
-const warm = new THREE.PointLight(0xffb267, 155, 48, 2);
+const warm = new THREE.PointLight(0xffb267, LITE ? 250 : 155, LITE ? 64 : 48, 2);
 warm.position.set(0, 7.5, 11);
 scene.add(warm);
-const warm2 = new THREE.PointLight(0xffa45c, 62, 34, 2);
-warm2.position.set(-2, 4.5, -13);
-scene.add(warm2);
-const treeGlow = new THREE.PointLight(0xffb060, 130, 38, 2);
-treeGlow.position.set(0, 11, 0);
-scene.add(treeGlow);
+if (!LITE) {
+  const warm2 = new THREE.PointLight(0xffa45c, 62, 34, 2);
+  warm2.position.set(-2, 4.5, -13);
+  scene.add(warm2);
+  const treeGlow = new THREE.PointLight(0xffb060, 130, 38, 2);
+  treeGlow.position.set(0, 11, 0);
+  scene.add(treeGlow);
+}
 
-scene.add(new THREE.AmbientLight(0x22344d, 0.12));
+scene.add(new THREE.AmbientLight(0x22344d, LITE ? 0.2 : 0.12));
 
 // --------------------------------------------------------------------- stars
 const starPositions = [];
@@ -832,13 +839,15 @@ function updateTrail(dt) {
 }
 
 // ------------------------------------------------------------------ composer
-const composer = new EffectComposer(renderer);
-composer.setPixelRatio(renderer.getPixelRatio());
-const renderPass = new RenderPass(scene, camera);
-composer.addPass(renderPass);
-const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.42, 0.62, 0.86);
-composer.addPass(bloom);
-composer.addPass(new OutputPass());
+// 轻量通道直接渲染到画布：跳过 Bloom 与全屏 RT，显著降低显存和填充开销
+let composer = null;
+if (!LITE) {
+  composer = new EffectComposer(renderer);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 0.42, 0.62, 0.86));
+  composer.addPass(new OutputPass());
+}
 
 // ------------------------------------------------------------------- resize
 function resize() {
@@ -855,7 +864,7 @@ function resize() {
   walkCamera.aspect = aspect;
   walkCamera.updateProjectionMatrix();
   renderer.setSize(w, h, false);
-  composer.setSize(w, h);
+  if (composer) composer.setSize(w, h);
 }
 new ResizeObserver(resize).observe(stage);
 window.addEventListener('orientationchange', () => setTimeout(resize, 180));
@@ -877,7 +886,7 @@ function setProgress(pct) {
   if (loaderStatus) loaderStatus.textContent = 'LOADING GEOMETRY · ' + Math.round(pct) + '%';
 }
 
-gltfLoader.load('./models/christmas_town.glb', (gltf) => {
+gltfLoader.load(LITE ? './models/christmas_town_lite.glb' : './models/christmas_town.glb', (gltf) => {
   model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
   const center = box.getCenter(new THREE.Vector3());
@@ -891,9 +900,9 @@ gltfLoader.load('./models/christmas_town.glb', (gltf) => {
   model.traverse((o) => {
     if (!o.isMesh) return;
     meshes++;
-    o.castShadow = true;
-    o.receiveShadow = true;
-    o.frustumCulled = false;
+    o.castShadow = !LITE;
+    o.receiveShadow = !LITE;
+    o.frustumCulled = !LITE;
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     for (const m of mats) {
       if (!m || seen.has(m)) continue;
@@ -907,8 +916,8 @@ gltfLoader.load('./models/christmas_town.glb', (gltf) => {
   });
 
   scene.add(model);
-  initTreeFx(scene, model);
-  initSceneFx(scene);
+  initTreeFx(scene, model, LITE);
+  initSceneFx(scene, LITE);
   ground.position.y = -0.035;
   glowDisc.position.y = 0.02;
   controls.target.set(0, Math.min(8.5, Math.max(4.5, size.y * 0.34)), 0);
@@ -1244,7 +1253,8 @@ renderer.setAnimationLoop(() => {
   updateHeadGlow(walkState.mode === 'walk' ? walkCamera : camera);
   updateTreeFx(t, walkState.mode === 'walk' ? walkCamera : camera);
   updateSceneFx(t, walkState.mode === 'walk' ? walkCamera : camera);
-  composer.render();
+  if (composer) composer.render();
+  else renderer.render(scene, walkState.mode === 'walk' ? walkCamera : camera);
 });
 
 // ------------------------------------------------------------------------ ui

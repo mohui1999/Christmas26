@@ -61,7 +61,7 @@ function makeSmokeTexture() {
 
 let fx = null;
 
-export function initSceneFx(scene) {
+export function initSceneFx(scene, lite = false) {
   if (fx) return;
   const group = new THREE.Group();
   group.name = 'scene-fx';
@@ -78,9 +78,11 @@ export function initSceneFx(scene) {
     const x = bx + OX;
     const z = -by;
     const y = 3.88 + OY;
-    const l = new THREE.PointLight(0xffa45c, 3.2, 7.0, 2);
-    l.position.set(x, y, z);
-    group.add(l);
+    if (!lite) {
+      const l = new THREE.PointLight(0xffa45c, 3.2, 7.0, 2);
+      l.position.set(x, y, z);
+      group.add(l);
+    }
 
     const halo = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),

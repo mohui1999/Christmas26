@@ -57,7 +57,7 @@ function makeStarTexture() {
   return tex;
 }
 
-export function initTreeFx(scene, model) {
+export function initTreeFx(scene, model, lite = false) {
   if (fx) return;
   const group = new THREE.Group();
   group.name = 'tree-fx';
@@ -107,7 +107,7 @@ export function initTreeFx(scene, model) {
   ];
   const capMat = new THREE.MeshStandardMaterial({ color: 0xd8b26c, metalness: 0.8, roughness: 0.28 });
   const capGeo = new THREE.CylinderGeometry(0.045, 0.055, 0.045, 10);
-  const baubleCount = 26;
+  const baubleCount = lite ? 12 : 26;
   for (let i = 0; i < baubleCount; i++) {
     const y = 4.2 + rng() * 12.0;
     const a = rng() * Math.PI * 2;
@@ -129,11 +129,12 @@ export function initTreeFx(scene, model) {
     color: 0xf1e6d2, roughness: 0.28, metalness: 0.35,
     emissive: 0x2a1c0e, emissiveIntensity: 0.35,
   });
-  const beads = new THREE.InstancedMesh(beadGeo, beadMat, 190);
+  const beadCount = lite ? 90 : 190;
+  const beads = new THREE.InstancedMesh(beadGeo, beadMat, beadCount);
   const m4 = new THREE.Matrix4();
   const q = new THREE.Quaternion();
-  for (let i = 0; i < 190; i++) {
-    const t = i / 189;
+  for (let i = 0; i < beadCount; i++) {
+    const t = i / (beadCount - 1);
     const y = 3.65 + t * 12.95;
     const a = t * Math.PI * 2 * 10.5 + 2.25;
     const r = surfR(y) * 0.97;
@@ -151,7 +152,7 @@ export function initTreeFx(scene, model) {
   // light dusting of snow on outer branch tips
   const snowGeo = new THREE.IcosahedronGeometry(1, 1);
   const snowMat = new THREE.MeshStandardMaterial({ color: 0xf5f9fb, roughness: 0.9, metalness: 0.0 });
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < (lite ? 12 : 28); i++) {
     const y = 5.0 + rng() * 11.3;
     const a = rng() * Math.PI * 2;
     const r = surfR(y) * (0.88 + rng() * 0.06);
@@ -177,17 +178,19 @@ export function initTreeFx(scene, model) {
   starGlow.scale.set(2.7, 2.7, 1);
   starGlow.renderOrder = 8;
   group.add(starGlow);
-  const starLight = new THREE.PointLight(0xffc06a, 10, 14, 2);
-  starLight.position.set(TREE.cx, TREE.starY, 0);
-  group.add(starLight);
-
-  // warm practical lights inside the canopy
+  // 轻量通道只保留星贴片自发光，不创建任何额外点光源
+  let starLight = null;
   const treeLights = [];
-  for (const [ly, en] of [[5.0, 3.0], [9.0, 2.6], [13.0, 2.0]]) {
-    const l = new THREE.PointLight(0xffa45c, en, 6.5, 2);
-    l.position.set(TREE.cx, ly, 0);
-    group.add(l);
-    treeLights.push(l);
+  if (!lite) {
+    starLight = new THREE.PointLight(0xffc06a, 10, 14, 2);
+    starLight.position.set(TREE.cx, TREE.starY, 0);
+    group.add(starLight);
+    for (const [ly, en] of [[5.0, 3.0], [9.0, 2.6], [13.0, 2.0]]) {
+      const l = new THREE.PointLight(0xffa45c, en, 6.5, 2);
+      l.position.set(TREE.cx, ly, 0);
+      group.add(l);
+      treeLights.push(l);
+    }
   }
 
   fx = { group, bulbMats, starGlow, starLight, treeLights, baubleMats };
@@ -201,7 +204,7 @@ export function updateTreeFx(t, activeCam) {
   const ss = 2.6 + pulse * 0.12;
   fx.starGlow.scale.set(ss, ss, 1);
   fx.starGlow.material.opacity = 0.52 + pulse * 0.1;
-  fx.starLight.intensity = 8 + pulse * 4;
+  if (fx.starLight) fx.starLight.intensity = 8 + pulse * 4;
   for (const m of fx.bulbMats) {
     const base = m.userData.baseEmissive ?? (m.userData.baseEmissive = m.emissiveIntensity || 3.0);
     m.emissiveIntensity = base * (0.9 + 0.1 * Math.sin(t * 1.9 + 0.7));

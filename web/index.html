@@ -163,13 +163,13 @@
 </script>
 <script>
   // 移动端/微信 WebView 默认静帧，避免 52MB Draco 场景反复崩溃重载；
-  // 桌面或 ?3d=1 时走完整 3D。?still=1 可强制静帧。
+  // 默认所有设备直进 3D：移动端/微信自动加载轻量模型。?still=1 手动看静帧。
   (function () {
     var ua = navigator.userAgent || '';
     var q = new URLSearchParams(location.search);
     var isWeChat = /MicroMessenger/i.test(ua);
     var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || window.matchMedia('(max-width: 900px)').matches;
-    var still = q.has('still') || (!q.has('3d') && (isWeChat || isMobile));
+    var still = q.has('still'); // 移动端/微信默认直进轻量 3D；?still 手动看静帧
     document.documentElement.classList.add(still ? 'still-mode' : 'full3d-mode');
     var src = still ? './still.js' : './main.js';
     var s = document.createElement('script');

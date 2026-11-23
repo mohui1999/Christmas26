@@ -78,6 +78,25 @@ blender -b --factory-startup --python scripts/build.py -- --draft
 
 更新静态文件：重新打包 `web/` 上传解压到站点目录即可。注意 macOS 打包会保留 600 权限，解压后需 `chmod -R a+rX <site-root>`，否则 nginx 返回 403。HTML/JS/CSS 不缓存便于迭代，GLB/PNG/wasm 等大文件缓存 7 天；若改了模型或贴图，记得刷新 Cloudflare 缓存。
 
+### 移动端 / 微信性能通道
+
+默认所有设备**直接进入可旋转的 3D**，不再跳静帧。`main.js` 按 UA 自动分流：
+
+| 通道 | 触发 | 模型 | 渲染配置 |
+|---|---|---|---|
+| 完整 | 桌面 | `christmas_town.glb`（50MB / 590 万面） | 阴影 + Bloom + PMREM 环境光 + 16 盏灯 |
+| 轻量 | 微信 / 移动 UA | `christmas_town_lite.glb`（6.2MB / 78 万面） | 关阴影/Bloom/PMREM，像素比锁 1，灯减至 4 盏，树饰/冰凌几何减半 |
+
+原因是完整版解码后约 770 万顶点（内存峰值 240MB+），微信 iOS WebView 会 OOM 并反复重载，表现为进度条循环。轻量模型由 `gltf-transform` 从完整版降面生成，153 个材质分组与 Draco 压缩均保留：
+
+```bash
+gltf-transform weld  web/models/christmas_town.glb /tmp/weld.glb
+gltf-transform simplify /tmp/weld.glb /tmp/simp.glb --ratio 0.06 --error 0.003 --lock-border false
+gltf-transform draco  /tmp/simp.glb web/models/christmas_town_lite.glb
+```
+
+URL 参数：`?still=1` 手动看静帧兜底；`?lite=1` 桌面强制轻量；`?full=1` 移动端强制完整版（仅调试，微信里会卡）。
+
 ## 本地浏览器预览
 
 项目内置一个本地 three.js 展示页（无需联网、无需构建）。当前服务已运行于 **http://127.0.0.1:8787/**：
