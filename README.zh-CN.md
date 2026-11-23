@@ -4,7 +4,7 @@
 
 一座完全由代码生成的蓝调时刻微缩世界：Python 驱动 Blender 程序化搭建场景，three.js 搬进浏览器，微信里也能直接旋转、缩放、漫游。
 
-[🎄 在线演示](https://christmas26.113067.xyz/) · [✍️ 博客文章](https://blog.113067.xyz/) · [🧾 原始提示词](ORIGINAL_PROMPT.md)
+[🎄 在线演示](https://christmas26.113067.xyz/) · [✍️ 博客文章](https://blog.113067.xyz/article/3) · [🧾 原始提示词](ORIGINAL_PROMPT.md)
 
 ![Christmas26 渲染成片](renders/christmas_town_post.png)
 
@@ -92,4 +92,4 @@ ORIGINAL_PROMPT.md       生成场景的原始 agent 提示词
 
 ---
 
-*全部资产由程序化脚本生成，无外部贴图或模型依赖。技术细节见[博客文章](https://blog.113067.xyz/)。*
+*全部资产由程序化脚本生成，无外部贴图或模型依赖。技术细节见[博客文章](https://blog.113067.xyz/article/3)。*

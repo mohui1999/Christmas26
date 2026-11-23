@@ -4,7 +4,7 @@
 
 A blue-hour miniature world built entirely in code: Python drives Blender to procedurally assemble the scene, three.js brings it to the browser, and you can rotate, zoom and wander inside it even from WeChat.
 
-[🎄 Live Demo](https://christmas26.113067.xyz/) · [✍️ Blog Post](https://blog.113067.xyz/) · [🧾 Original Prompt](ORIGINAL_PROMPT.md)
+[🎄 Live Demo](https://christmas26.113067.xyz/) · [✍️ Blog Post](https://blog.113067.xyz/article/3) · [🧾 Original Prompt](ORIGINAL_PROMPT.md)
 
 ![Christmas26 final render](renders/christmas_town_post.png)
 
@@ -92,4 +92,4 @@ Incremental updates: repack `web/`, upload and extract, then run `chmod -R a+rX 
 
 ---
 
-*All assets are produced by procedural scripts — no external textures or models. See the [blog post](https://blog.113067.xyz/) for technical details.*
+*All assets are produced by procedural scripts — no external textures or models. See the [blog post](https://blog.113067.xyz/article/3) for technical details.*
